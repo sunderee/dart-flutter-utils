@@ -2,7 +2,7 @@ import { fetch } from "bun";
 import { analysisRulesModel, type AnalysisRuleModel } from "../data";
 
 export class AnalysisRulesService {
-    private static readonly URL = 'https://raw.githubusercontent.com/dart-lang/site-www/main/src/_data/linter_rules.json';
+    private static readonly URL = 'https://raw.githubusercontent.com/dart-lang/site-www/refs/heads/main/src/data/linter_rules.json';
 
     async getAnalysisRules(): Promise<AnalysisRuleModel[]> {
         const response = await fetch(AnalysisRulesService.URL);
