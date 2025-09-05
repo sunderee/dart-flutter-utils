@@ -64,6 +64,10 @@ export function runCLI(args: string[]) {
                 dependencyCandidateKeys = dependencyCandidateKeys.filter((item) => !excludesArray.includes(item));
             }
 
+            if (dependencyCandidateKeys.length > 0) {
+                console.log('\nDependencies:');
+            }
+
             const pubDevService = new PubDevService();
             for (const key of dependencyCandidateKeys) {
                 let value = dependencyCandidateValues.find((item) => item[0] === key);
