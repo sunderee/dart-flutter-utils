@@ -11,7 +11,7 @@ export class AnalysisOptionsWriterService {
         this.analyzerErrors(style, rules, lines);
         this.linterRules(style, rules, lines);
 
-        await Bun.file(filePath).write(lines.join('\n'));
+        await Bun.write(filePath, lines.join('\n'));
     }
 
     private importFromStyle(style: AnalysisRuleStyle) {

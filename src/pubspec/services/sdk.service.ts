@@ -1,4 +1,4 @@
-import { fetch } from "bun";
+// Use global fetch to simplify testing/mocking
 import { sdkModelSchema, type LatestSDKModel } from "../data/sdk.model";
 
 export class SDKService {
@@ -6,8 +6,16 @@ export class SDKService {
 
     async getDartAndFlutterSDKVersions(): Promise<LatestSDKModel> {
         const response = await fetch(SDKService.URL);
+        if (!response.ok) {
+            throw new Error(`Failed to fetch SDK versions: HTTP ${response.status}`);
+        }
         const rawBody = await response.text();
-        const jsonBody = JSON.parse(rawBody);
+        let jsonBody: unknown;
+        try {
+            jsonBody = JSON.parse(rawBody);
+        } catch (error) {
+            throw new Error('Invalid JSON in SDK versions response');
+        }
         const parsedBody = await sdkModelSchema.safeParseAsync(jsonBody);
 
         if (parsedBody.error) {
@@ -16,9 +24,9 @@ export class SDKService {
 
         const latestStableHash = parsedBody.data.current_release.stable;
         const latestReleaseCandidate = parsedBody.data.releases
-            .find((item) => item.hash === latestStableHash && item.dart_sdk_version);
+            .find((item) => item.hash === latestStableHash && item.dart_sdk_version !== undefined);
 
-        if (latestReleaseCandidate === undefined || !latestReleaseCandidate.dart_sdk_version) {
+        if (latestReleaseCandidate === undefined || latestReleaseCandidate.dart_sdk_version === undefined) {
             throw new Error(`Latest stable release candidate not found or missing Dart SDK version`);
         }
 

@@ -1,4 +1,5 @@
 import { pubDevPackageModel, type LatestPubDevPackageVersion } from "../data/pub-dev-package.model";
+// Uses global fetch for easier test mocking
 
 export class PubDevService {
     private static readonly BASE_URL = 'https://pub.dev/api/packages';
@@ -12,7 +13,7 @@ export class PubDevService {
         }
 
         const rawBody = await response.text();
-        let jsonBody;
+        let jsonBody: unknown;
 
         try {
             jsonBody = JSON.parse(rawBody);

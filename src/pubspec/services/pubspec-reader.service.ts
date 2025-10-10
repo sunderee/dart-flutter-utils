@@ -9,10 +9,15 @@ export class PubspecReaderService {
         }
 
         const fileContent = await Bun.file(path).text();
-        const parsedYamlFile = parse(fileContent);
+        let parsedYamlFile: unknown;
+        try {
+            parsedYamlFile = parse(fileContent);
+        } catch (error) {
+            throw new Error(`Invalid YAML in pubspec at ${path}`);
+        }
         const pubspec = await pubspecModelSchema.safeParseAsync(parsedYamlFile);
 
-        if (pubspec.error) {
+        if (!pubspec.success) {
             throw new Error(`Invalid pubspec file at ${path}: ${pubspec.error.message}`);
         }
 

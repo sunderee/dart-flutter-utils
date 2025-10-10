@@ -1,4 +1,4 @@
-import { fetch } from "bun";
+// Use global fetch to simplify testing/mocking
 import { analysisRulesModel, type AnalysisRuleModel } from "../data";
 
 export class AnalysisRulesService {
@@ -6,13 +6,20 @@ export class AnalysisRulesService {
 
     async getAnalysisRules(): Promise<AnalysisRuleModel[]> {
         const response = await fetch(AnalysisRulesService.URL);
-        const data = await response.json();
-        const parsedResponse = await analysisRulesModel.safeParseAsync(data);
-
-        if (!parsedResponse.success) {
-            throw new Error('Failed to parse analysis rules');
+        if (!response.ok) {
+            throw new Error(`Failed to fetch linter rules: HTTP ${response.status}`);
         }
-
+        const raw = await response.text();
+        let json: unknown;
+        try {
+            json = JSON.parse(raw);
+        } catch (error) {
+            throw new Error('Failed to parse linter rules JSON');
+        }
+        const parsedResponse = await analysisRulesModel.safeParseAsync(json);
+        if (!parsedResponse.success) {
+            throw new Error(`Failed to parse analysis rules: ${parsedResponse.error.message}`);
+        }
         return parsedResponse.data;
     }
 }

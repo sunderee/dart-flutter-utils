@@ -5,7 +5,8 @@ import { AnalysisOptionsWriterService } from '../analysis-options/services/analy
 import { AnalysisRulesService } from '../analysis-options/services/analysis-rules.service';
 import { PubDevService, PubspecReaderService, PubspecWriterService, SDKService } from '../pubspec/services';
 
-export function runCLI(args: string[]) {
+/** Entry point for the CLI */
+export function runCLI(args: string[]): void {
     const program = new Command();
 
     program
@@ -33,8 +34,9 @@ export function runCLI(args: string[]) {
 
             const pubspecWriterService = new PubspecWriterService();
 
-            // Check if we need to update environment section of the pubspec.yaml file
-            if ((currentDartVersion !== undefined && currentDartVersion !== latestSDKVersions.dart) || (currentFlutterVersion !== undefined && currentFlutterVersion !== latestSDKVersions.flutter)) {
+            const hasEnvChanges = (currentDartVersion !== undefined && currentDartVersion !== latestSDKVersions.dart)
+                || (currentFlutterVersion !== undefined && currentFlutterVersion !== latestSDKVersions.flutter);
+            if (hasEnvChanges) {
                 console.log('Environment:');
             }
 
@@ -52,8 +54,8 @@ export function runCLI(args: string[]) {
             }
 
             // Prepare dependency candidates for a latest version check
-            let dependencyCandidateKeys = [...Object.keys(pubspecFile.dependencies ?? {}), ...Object.keys(pubspecFile.dev_dependencies ?? {})]
-            let dependencyCandidateValues = [...Object.entries(pubspecFile.dependencies ?? {}), ...Object.entries(pubspecFile.dev_dependencies ?? {})]
+            let dependencyCandidateKeys = [...Object.keys(pubspecFile.dependencies ?? {}), ...Object.keys(pubspecFile.dev_dependencies ?? {})];
+            const dependencyCandidateValues = [...Object.entries(pubspecFile.dependencies ?? {}), ...Object.entries(pubspecFile.dev_dependencies ?? {})];
 
             const includesArray = (options.include as string | undefined ?? '').split(',').map((item) => item.trim()).filter((item) => item.length > 0);
             const excludesArray = (options.exclude as string | undefined ?? '').split(',').map((item) => item.trim()).filter((item) => item.length > 0);
@@ -70,7 +72,7 @@ export function runCLI(args: string[]) {
 
             const pubDevService = new PubDevService();
             for (const key of dependencyCandidateKeys) {
-                let value = dependencyCandidateValues.find((item) => item[0] === key);
+                const value = dependencyCandidateValues.find((item) => item[0] === key);
                 if (value === undefined) {
                     console.log(chalk.red(`  ${key} not found in dependencies or dev_dependencies`));
                     continue;
@@ -81,7 +83,7 @@ export function runCLI(args: string[]) {
                     const latestVersion = await pubDevService.getPackageDetails(key);
 
                     if (currentVersion !== latestVersion.version) {
-                        console.log(`  ${key}: ${chalk.red(currentVersion)} -> ${chalk.green(latestVersion.version)}`);
+                        console.log(`  ${key}: ${chalk.red(currentVersion ?? 'unknown')} -> ${chalk.green(latestVersion.version)}`);
                         if (options.write) {
                             await pubspecWriterService.writeDependency(options.path, key, latestVersion.version);
                         }
@@ -100,7 +102,13 @@ export function runCLI(args: string[]) {
             const analysisRulesService = new AnalysisRulesService();
             const analysisRules = await analysisRulesService.getAnalysisRules();
 
-            const analysisRuleStyle = options.style as AnalysisRuleStyle;
+            const style = String(options.style ?? '').toLowerCase();
+            const validStyles = new Set(['core', 'recommended', 'flutter']);
+            if (!validStyles.has(style)) {
+                console.error(`Invalid style: ${options.style}. Valid values are: core, recommended, flutter`);
+                process.exit(2);
+            }
+            const analysisRuleStyle = style as AnalysisRuleStyle;
 
             const analysisOptionsWriterService = new AnalysisOptionsWriterService();
             await analysisOptionsWriterService.writeAnalysisOptionsFile(options.path, analysisRules, analysisRuleStyle);
@@ -114,8 +122,16 @@ export function runCLI(args: string[]) {
     }
 }
 
-const cleanUpVersion = (version: string | undefined) => version
-    ?.replaceAll('^', '')
-    .replaceAll('>', '')
-    .replaceAll('<', '')
-    .replaceAll('=', '');
+/**
+ * Normalizes a semver constraint to just the version portion for comparison.
+ */
+const cleanUpVersion = (version: string | undefined): string | undefined => {
+    if (version === undefined) {
+        return undefined;
+    }
+    return version
+        .replaceAll('^', '')
+        .replaceAll('>', '')
+        .replaceAll('<', '')
+        .replaceAll('=', '');
+}

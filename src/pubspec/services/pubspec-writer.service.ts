@@ -1,6 +1,11 @@
 export class PubspecWriterService {
     async writeDartSDK(filePath: string, sdk: string): Promise<void> {
-        let pubspecFile = await Bun.file(filePath).text();
+        const file = Bun.file(filePath);
+        const pubspecExists = await file.exists();
+        if (!pubspecExists) {
+            throw new Error(`pubspec.yaml not found at ${filePath}`);
+        }
+        let pubspecFile = await file.text();
         // Handle various SDK version formats and explicitly set to >=X.X.X format
         // Replaces: ">=2.17.0 <4.0.0", '^3.0.0', '>=3.1.0 <4.0.0' with >=X.X.X
         pubspecFile = pubspecFile.replace(
@@ -11,7 +16,12 @@ export class PubspecWriterService {
     }
 
     async writeFlutterSDK(filePath: string, flutter: string): Promise<void> {
-        let pubspecFile = await Bun.file(filePath).text();
+        const file = Bun.file(filePath);
+        const pubspecExists = await file.exists();
+        if (!pubspecExists) {
+            throw new Error(`pubspec.yaml not found at ${filePath}`);
+        }
+        let pubspecFile = await file.text();
         // Handle various Flutter version formats and explicitly set to >=X.X.X format
         // Replaces: ">=3.10.0", '^3.13.0', '>=3.13.0' with >=X.X.X
         pubspecFile = pubspecFile.replace(
@@ -22,7 +32,12 @@ export class PubspecWriterService {
     }
 
     async writeDependency(filePath: string, dependencyName: string, dependencyVersion: string): Promise<void> {
-        let pubspecFile = await Bun.file(filePath).text();
+        const file = Bun.file(filePath);
+        const pubspecExists = await file.exists();
+        if (!pubspecExists) {
+            throw new Error(`pubspec.yaml not found at ${filePath}`);
+        }
+        let pubspecFile = await file.text();
 
         // Handle various dependency formats: ^1.0.2, "^1.0.2", '>=1.0.0 <2.0.0', etc.
         // Use caret format (^X.X.X) for dependencies to allow compatible updates
