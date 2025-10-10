@@ -1,4 +1,3 @@
-export * from './pub-dev-package.model';
+export * from "./pub-dev-package.model";
 export * from "./pubspec.model";
-export * from './sdk.model';
-
+export * from "./sdk.model";

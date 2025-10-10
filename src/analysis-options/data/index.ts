@@ -1,3 +1,2 @@
-export * from './analysis-rules.model';
-export * from './style.enum';
-
+export * from "./analysis-rules.model";
+export * from "./style.enum";
