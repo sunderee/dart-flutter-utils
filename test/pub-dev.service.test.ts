@@ -1,4 +1,4 @@
-import { describe, it, expect, mock } from 'bun:test';
+import { describe, expect, it, mock } from 'bun:test';
 import { PubDevService } from '../src/pubspec/services/pub-dev.service';
 
 const SAMPLE = {
@@ -16,7 +16,6 @@ describe('PubDevService', () => {
   it('returns latest package version', async () => {
     const svc = new PubDevService();
     const fetchSpy = mock(() => Promise.resolve(new Response(JSON.stringify(SAMPLE), { status: 200 })));
-    // @ts-expect-error override global
     globalThis.fetch = fetchSpy as unknown as typeof fetch;
 
     const res = await svc.getPackageDetails('http');
@@ -26,7 +25,6 @@ describe('PubDevService', () => {
   it('throws on 404', async () => {
     const svc = new PubDevService();
     const fetchSpy = mock(() => Promise.resolve(new Response('not found', { status: 404 })));
-    // @ts-expect-error override global
     globalThis.fetch = fetchSpy as unknown as typeof fetch;
 
     await expect(svc.getPackageDetails('nope')).rejects.toThrow('Package not found: nope (HTTP 404)');
@@ -35,7 +33,6 @@ describe('PubDevService', () => {
   it('throws on invalid JSON', async () => {
     const svc = new PubDevService();
     const fetchSpy = mock(() => Promise.resolve(new Response('{bad', { status: 200 })));
-    // @ts-expect-error override global
     globalThis.fetch = fetchSpy as unknown as typeof fetch;
 
     await expect(svc.getPackageDetails('http')).rejects.toThrow('Invalid JSON response for package: http');

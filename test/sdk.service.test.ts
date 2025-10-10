@@ -1,4 +1,4 @@
-import { describe, it, expect, mock } from 'bun:test';
+import { describe, expect, it, mock } from 'bun:test';
 import { SDKService } from '../src/pubspec/services/sdk.service';
 
 const VALID_RESPONSE = {
@@ -14,7 +14,6 @@ describe('SDKService', () => {
   it('returns latest Dart and Flutter versions on success', async () => {
     const sdkService = new SDKService();
     const fetchSpy = mock(() => Promise.resolve(new Response(JSON.stringify(VALID_RESPONSE), { status: 200 })));
-    // @ts-expect-error override global
     globalThis.fetch = fetchSpy as unknown as typeof fetch;
 
     const result = await sdkService.getDartAndFlutterSDKVersions();
@@ -24,7 +23,6 @@ describe('SDKService', () => {
   it('throws on non-OK response', async () => {
     const sdkService = new SDKService();
     const fetchSpy = mock(() => Promise.resolve(new Response('nope', { status: 500 })));
-    // @ts-expect-error override global
     globalThis.fetch = fetchSpy as unknown as typeof fetch;
 
     await expect(sdkService.getDartAndFlutterSDKVersions()).rejects.toThrow('Failed to fetch SDK versions: HTTP 500');
@@ -33,7 +31,6 @@ describe('SDKService', () => {
   it('throws on invalid JSON', async () => {
     const sdkService = new SDKService();
     const fetchSpy = mock(() => Promise.resolve(new Response('{bad json', { status: 200 })));
-    // @ts-expect-error override global
     globalThis.fetch = fetchSpy as unknown as typeof fetch;
 
     await expect(sdkService.getDartAndFlutterSDKVersions()).rejects.toThrow('Invalid JSON in SDK versions response');
@@ -43,7 +40,6 @@ describe('SDKService', () => {
     const bad = { ...VALID_RESPONSE, current_release: { beta: 'b', dev: 'd', stable: 'missing' } };
     const sdkService = new SDKService();
     const fetchSpy = mock(() => Promise.resolve(new Response(JSON.stringify(bad), { status: 200 })));
-    // @ts-expect-error override global
     globalThis.fetch = fetchSpy as unknown as typeof fetch;
 
     await expect(sdkService.getDartAndFlutterSDKVersions()).rejects.toThrow('Latest stable release candidate not found or missing Dart SDK version');
