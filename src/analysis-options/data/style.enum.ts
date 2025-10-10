@@ -1,5 +1,5 @@
 export enum AnalysisRuleStyle {
-    CORE = 'core',
-    RECOMMENDED = 'recommended',
-    FLUTTER = 'flutter'
+  CORE = "core",
+  RECOMMENDED = "recommended",
+  FLUTTER = "flutter",
 }
